@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
 import httpStatus from "http-status";
 import { pick } from "../utils/pick";
-import { ApiError } from "../utils/ApiError";
 import { sendResponse } from "../services/shared.service";
 
 export const validate =
