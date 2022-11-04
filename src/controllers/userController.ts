@@ -42,3 +42,36 @@ export const register = catchAsync(async (req: Request, res: Response) => {
     true
   );
 });
+
+export const login = catchAsync(async (req: Request, res: Response) => {
+  const { userName, password } = req.body;
+  const userExist: User = await UserService.userExists({ userName });
+  console.log(userExist);
+
+  if (!userExist) {
+    return sendResponse(
+      res,
+      httpStatus.OK,
+      null,
+      false,
+      "User name does not exist"
+    );
+  }
+
+  const comparePassword = await bcrypt.compare(password, userExist.password!);
+  if (!comparePassword) {
+    return sendResponse(res, httpStatus.OK, null, false, "Incorrect password");
+  }
+
+  return sendResponse(
+    res,
+    httpStatus.OK,
+    {
+      userName: userExist.userName,
+      email: userExist.email,
+      avatar: userExist.avatar,
+      _id: userExist._id,
+    },
+    true
+  );
+});
