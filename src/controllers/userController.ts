@@ -2,10 +2,14 @@ import { Request, Response } from "express";
 import httpStatus from "http-status";
 import UserService from "../services/user.service";
 import { catchAsync } from "../utils/catchAsync";
-import { sendResponse } from "../utils/helpers";
 import bcrypt from "bcrypt";
 import userService from "../services/user.service";
 import { User } from "../utils/types";
+import {
+  generateJwtRefreshToken,
+  generateJwtToken,
+  sendResponse,
+} from "../services/shared.service";
 
 export const register = catchAsync(async (req: Request, res: Response) => {
   const { userName, email, password } = req.body;
@@ -29,6 +33,8 @@ export const register = catchAsync(async (req: Request, res: Response) => {
     email,
     password: hashPassword,
   });
+  const token: string = generateJwtToken(user, "2h");
+  const refreshToken: string = generateJwtRefreshToken(user, "1y");
 
   return sendResponse(
     res,
@@ -38,6 +44,8 @@ export const register = catchAsync(async (req: Request, res: Response) => {
       email: user.email,
       avatar: user.avatar,
       _id: user._id,
+      token,
+      refreshToken,
     },
     true
   );
@@ -46,7 +54,6 @@ export const register = catchAsync(async (req: Request, res: Response) => {
 export const login = catchAsync(async (req: Request, res: Response) => {
   const { userName, password } = req.body;
   const userExist: User = await UserService.userExists({ userName });
-  console.log(userExist);
 
   if (!userExist) {
     return sendResponse(
@@ -62,7 +69,8 @@ export const login = catchAsync(async (req: Request, res: Response) => {
   if (!comparePassword) {
     return sendResponse(res, httpStatus.OK, null, false, "Incorrect password");
   }
-
+  const token: string = generateJwtToken(userExist, "2h");
+  const refreshToken: string = generateJwtRefreshToken(userExist, "1y");
   return sendResponse(
     res,
     httpStatus.OK,
@@ -71,6 +79,8 @@ export const login = catchAsync(async (req: Request, res: Response) => {
       email: userExist.email,
       avatar: userExist.avatar,
       _id: userExist._id,
+      token,
+      refreshToken,
     },
     true
   );
