@@ -2,7 +2,7 @@ import { User } from "../utils/types";
 import jwt from "jsonwebtoken";
 import { Response } from "express";
 
-export const generateJwtToken = (user: User, expires: string) => {
+export const generateJwtToken = (user: User, expires: string): string => {
   const token: string = jwt.sign({ userId: user._id }, process.env.TOKEN_KEY!, {
     expiresIn: expires,
   });
@@ -10,7 +10,10 @@ export const generateJwtToken = (user: User, expires: string) => {
   return token;
 };
 
-export const generateJwtRefreshToken = (user: User, expires: string) => {
+export const generateJwtRefreshToken = (
+  user: User,
+  expires: string
+): string => {
   const token: string = jwt.sign(
     { userId: user._id },
     process.env.REFRESH_TOKEN_KEY!,

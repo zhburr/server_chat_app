@@ -3,6 +3,7 @@ import Joi from "joi";
 import httpStatus from "http-status";
 import { pick } from "../utils/pick";
 import { ApiError } from "../utils/ApiError";
+import { sendResponse } from "../services/shared.service";
 
 export const validate =
   <T extends {}>(schema: T) =>
@@ -20,7 +21,7 @@ export const validate =
       const errorMessage = error.details
         .map((details) => details.message)
         .join(", ");
-      return next(new ApiError(httpStatus.FORBIDDEN, errorMessage));
+      return next(sendResponse(res, httpStatus.OK, null, false, errorMessage));
     }
     Object.assign(req, value);
     return next();
