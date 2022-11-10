@@ -9,11 +9,12 @@ import {
   generateJwtRefreshToken,
   generateJwtToken,
   sendResponse,
+  verifyRefreshToken,
 } from "../services/shared.service";
 
 export const register = catchAsync(async (req: Request, res: Response) => {
   const { userName, email, password } = req.body;
-  const userNameExist: User = await UserService.userExists({ userName });
+  const userNameExist: User = await UserService.getUser({ userName });
   if (userNameExist) {
     return sendResponse(
       res,
@@ -23,7 +24,7 @@ export const register = catchAsync(async (req: Request, res: Response) => {
       "User name already exist"
     );
   }
-  const emailExist: User = await UserService.userExists({ email });
+  const emailExist: User = await UserService.getUser({ email });
   if (emailExist) {
     return sendResponse(res, httpStatus.OK, null, false, "Email already exist");
   }
@@ -53,7 +54,7 @@ export const register = catchAsync(async (req: Request, res: Response) => {
 
 export const login = catchAsync(async (req: Request, res: Response) => {
   const { userName, password } = req.body;
-  const userExist: User = await UserService.userExists({ userName });
+  const userExist: User = await UserService.getUser({ userName });
 
   if (!userExist) {
     return sendResponse(
@@ -84,4 +85,50 @@ export const login = catchAsync(async (req: Request, res: Response) => {
     },
     true
   );
+});
+
+export const refreshToken = catchAsync(async (req: Request, res: Response) => {
+  let tokenUser: any = verifyRefreshToken(req.body.refreshToken);
+  console.log(tokenUser);
+
+  let user: User = {};
+  let token: string = "";
+  if (tokenUser) {
+    user = await UserService.getUser({ _id: tokenUser.user.userId });
+    console.log(user);
+
+    if (user) {
+      token = generateJwtToken(user, "2h");
+    } else {
+      return sendResponse(
+        res,
+        httpStatus.UNAUTHORIZED,
+        null,
+        false,
+        "Token not valid"
+      );
+    }
+  }
+
+  return sendResponse(
+    res,
+    httpStatus.OK,
+    {
+      userName: user.userName,
+      email: user.email,
+      avatar: user.avatar,
+      _id: user._id,
+      token,
+      refreshToken: req.body.refreshToken,
+    },
+    true
+  );
+});
+
+export const setUserAvatar = catchAsync(async (req: Request, res: Response) => {
+  const user: User = await userService.getUser({ _id: req.body.user.userId });
+  if (user) {
+    console.log("user exsis am updating the pic");
+  }
+  return sendResponse(res, httpStatus.OK, {}, true);
 });

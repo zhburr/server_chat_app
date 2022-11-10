@@ -16,7 +16,7 @@ export const verifyToken = (
   if (!token) {
     return sendResponse(
       res,
-      httpStatus.OK,
+      httpStatus.UNAUTHORIZED,
       null,
       false,
       "A token is required for authentication"
@@ -24,9 +24,15 @@ export const verifyToken = (
   }
   try {
     const decoded = jwt.verify(token, config.TOKEN_KEY!);
-    Object.assign(req, { user: decoded });
+    Object.assign(req.body, { user: decoded });
   } catch (err) {
-    return sendResponse(res, httpStatus.OK, null, false, "Invalid Token");
+    return sendResponse(
+      res,
+      httpStatus.FORBIDDEN,
+      null,
+      false,
+      "Invalid Token"
+    );
   }
   return next();
 };

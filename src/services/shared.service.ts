@@ -25,6 +25,15 @@ export const generateJwtRefreshToken = (
   return token;
 };
 
+export const verifyRefreshToken = (token: string) => {
+  try {
+    const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_KEY!);
+    return { user: decoded };
+  } catch (error) {
+    return false;
+  }
+};
+
 export function sendResponse(
   res: Response,
   status: number,
