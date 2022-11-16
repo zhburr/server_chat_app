@@ -89,14 +89,10 @@ export const login = catchAsync(async (req: Request, res: Response) => {
 
 export const refreshToken = catchAsync(async (req: Request, res: Response) => {
   let tokenUser: any = verifyRefreshToken(req.body.refreshToken);
-  console.log(tokenUser);
-
   let user: User = {};
   let token: string = "";
   if (tokenUser) {
     user = await UserService.getUser({ _id: tokenUser.user.userId });
-    console.log(user);
-
     if (user) {
       token = generateJwtToken(user, "2h");
     } else {
@@ -126,9 +122,23 @@ export const refreshToken = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const setUserAvatar = catchAsync(async (req: Request, res: Response) => {
-  const user: User = await userService.getUser({ _id: req.body.user.userId });
+  const user = await userService.getUser({ _id: req.body.user.userId });
+  const avatar = req.body.avatar;
   if (user) {
-    console.log("user exsis am updating the pic");
+    user.avatar = avatar;
+    await user.save();
+    return sendResponse(
+      res,
+      httpStatus.OK,
+      {
+        userName: user.userName,
+        email: user.email,
+        avatar: user.avatar,
+        _id: user._id,
+      },
+      true
+    );
+  } else {
+    return sendResponse(res, httpStatus.OK, {}, false, "User not found");
   }
-  return sendResponse(res, httpStatus.OK, {}, true);
 });
